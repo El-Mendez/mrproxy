@@ -46,6 +46,9 @@ func handleIncoming(program *tea.Program, w http.ResponseWriter, r *http.Request
 		}
 		i++
 	}
+	if program != nil {
+		program.Send(incomingMsg{request: &request})
+	}
 
 	if r.Header.Get("Content-Type") == "application/json" {
 		var body interface{}
@@ -59,17 +62,9 @@ func handleIncoming(program *tea.Program, w http.ResponseWriter, r *http.Request
 		request.body = string(s)
 	}
 
-	io.WriteString(w, "This is my website!\n")
-
 	request.status = 200
 	request.duration = time.Since(start)
-
-	if program == nil {
-		fmt.Printf("%+v\n", request)
-	} else {
-		program.Send(incomingMsg{request: &request})
-	}
-
+	io.WriteString(w, "This is my website!\n")
 }
 
 func parseJsonValue(value interface{}) interface{} {
