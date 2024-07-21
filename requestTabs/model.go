@@ -1,7 +1,6 @@
 package requestTabs
 
 import (
-	"fmt"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -73,7 +72,7 @@ func (m *Model) SetHeight(height int) {
 
 func (m *Model) SetRequest(request *request2.Request) {
 	m.request = request
-	m.viewport.SetContent(fmt.Sprintf("%+v \n %+v", request, request))
+	m.viewport.SetContent(renderRequest(request))
 	m.viewport.SetYOffset(0)
 }
 
