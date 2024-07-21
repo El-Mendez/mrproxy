@@ -36,6 +36,9 @@ var (
 				Copy().
 				Border(tabBorderWithBottom("┴", "─", "┴"))
 
+	insideStyle = lipgloss.NewStyle().
+			Align(lipgloss.Top)
+
 	windowStyle = lipgloss.NewStyle().
 			BorderForeground(shared.HighlightColor).
 			Align(lipgloss.Top).
@@ -48,6 +51,8 @@ type Model struct {
 	reqViewport    viewport.Model
 	resViewport    viewport.Model
 	request        *shared.Request
+	reqContent     string
+	resContent     string
 }
 
 func New(request *shared.Request) Model {
@@ -61,6 +66,8 @@ func New(request *shared.Request) Model {
 		reqV,
 		resV,
 		request,
+		"",
+		"",
 	}
 }
 func (m *Model) SetWidth(width int) {
@@ -68,6 +75,10 @@ func (m *Model) SetWidth(width int) {
 	windowStyle.Width(width - 2)
 	m.reqViewport.Width = width - 2
 	m.resViewport.Width = width - 2
+	insideStyle.Width(width - 2)
+
+	m.resViewport.SetContent(insideStyle.Render(m.resContent))
+	m.reqViewport.SetContent(insideStyle.Render(m.reqContent))
 }
 
 func (m *Model) SetHeight(height int) {
@@ -75,20 +86,32 @@ func (m *Model) SetHeight(height int) {
 	windowStyle.Height(height - 4)
 	m.reqViewport.Height = height - 4
 	m.resViewport.Height = height - 4
+	insideStyle.Height(height - 6)
+
+	m.resViewport.SetContent(insideStyle.Render(m.resContent))
+	m.reqViewport.SetContent(insideStyle.Render(m.reqContent))
 }
 
 func (m *Model) SetRequest(request *shared.Request) {
 	m.request = request
-	m.reqViewport.SetContent(renderRequest(request.Method, request.Query, request.ReqHeaders, request.ReqBody))
+	m.reqContent = renderRequest(request.Method, request.Query, request.ReqHeaders, request.ReqBody)
+	m.reqViewport.SetContent(m.reqContent)
 	m.reqViewport.SetYOffset(0)
 
-	m.resViewport.SetContent(renderRequest(request.Method, request.Query, request.ResHeaders, request.ResBody))
+	m.resContent = renderRequest(request.Method, request.Query, request.ResHeaders, request.ResBody)
+	m.resViewport.SetContent(m.resContent)
 	m.resViewport.SetYOffset(0)
+
+	m.resViewport.SetContent(insideStyle.Render(m.resContent))
+	m.reqViewport.SetContent(insideStyle.Render(m.reqContent))
 }
 
 func (m *Model) SetResponse(request *shared.Request) {
-	m.resViewport.SetContent(renderRequest(request.Method, request.Query, request.ResHeaders, request.ResBody))
+	m.resContent = renderRequest(request.Method, request.Query, request.ResHeaders, request.ResBody)
+	m.resViewport.SetContent(m.resContent)
 	m.resViewport.SetYOffset(0)
+
+	m.resViewport.SetContent(insideStyle.Render(m.resContent))
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
