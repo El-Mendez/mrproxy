@@ -9,6 +9,8 @@ import (
 var (
 	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
 	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
+
+	windowStyle = lipgloss.NewStyle().Align(lipgloss.Top)
 )
 
 type Model struct {
@@ -36,12 +38,14 @@ func (m *Model) SetFollow(follow bool) {
 }
 
 func (m *Model) SetWidth(width int) {
+	windowStyle.Width(width)
 	m.list.SetWidth(width)
 	itemStyle = itemStyle.MaxWidth(width)
 	selectedItemStyle = selectedItemStyle.MaxWidth(width)
 }
 
 func (m *Model) SetHeight(height int) {
+	windowStyle.Height(height)
 	m.list.SetHeight(height - 1)
 }
 
@@ -72,5 +76,5 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 }
 
 func (m Model) View() string {
-	return m.list.View()
+	return windowStyle.Render(m.list.View())
 }
