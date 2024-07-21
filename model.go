@@ -14,6 +14,7 @@ const defaultHeight = 14
 const minWidth = 80
 
 type incomingMsg struct{ request *request2.Request }
+type updatedMsg struct{ request *request2.Request }
 type model struct {
 	list     requestList.Model
 	tabs     requestTabs.Model
@@ -87,6 +88,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case incomingMsg:
 		return m, m.list.InsertItem(0, msg.request)
+
+	case updatedMsg:
+		if m.selected == msg.request {
+			m.tabs.SetResponse(msg.request)
+		}
 	}
 
 	var cmd tea.Cmd

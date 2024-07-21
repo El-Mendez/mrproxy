@@ -1,18 +1,21 @@
 package main
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	"io"
 	"mrproxy/shared"
 	"net/http"
+	"net/http/httputil"
+	"net/url"
 	"os"
-	"time"
+	"strings"
 )
 
-func setupProxy(port string, program *tea.Program) {
-	http.HandleFunc("/", handleIncomingGenerator(program))
+func setupProxy(port string, program *tea.Program, proxyUrl *url.URL) {
+	http.HandleFunc("/", handleIncomingGenerator(program, proxyUrl))
 
 	err := http.ListenAndServe(port, nil)
 	if errors.Is(err, http.ErrServerClosed) {
@@ -23,31 +26,33 @@ func setupProxy(port string, program *tea.Program) {
 	}
 }
 
-func handleIncomingGenerator(program *tea.Program) func(w http.ResponseWriter, r *http.Request) {
+func handleIncomingGenerator(program *tea.Program, proxyUrl *url.URL) func(w http.ResponseWriter, r *http.Request) {
+	proxy := httputil.NewSingleHostReverseProxy(proxyUrl)
+
 	return func(w http.ResponseWriter, r *http.Request) {
-		handleIncoming(program, w, r)
+		handleIncoming(program, proxy, w, r)
 	}
 }
 
-func handleIncoming(program *tea.Program, w http.ResponseWriter, r *http.Request) {
-	start := time.Now()
+func handleIncoming(program *tea.Program, proxy *httputil.ReverseProxy, w http.ResponseWriter, r *http.Request) {
 	request := shared.Request{
-		Query:    r.RequestURI,
-		Method:   r.Method,
-		Duration: time.Since(start),
-		Headers:  r.Header,
+		Query:      r.RequestURI,
+		Method:     r.Method,
+		ReqHeaders: r.Header,
 	}
 
 	if program != nil {
 		program.Send(incomingMsg{request: &request})
 	}
 
-	if r.Header.Get("Content-Type") == "application/json" || r.Header.Get("Content-Type") == "text/plain" {
+	contentType := r.Header.Get("Content-Type")
+	if strings.Contains(contentType, "text/html") || strings.Contains(contentType, "application/json") || strings.Contains(contentType, "text/plain") {
 		s, _ := io.ReadAll(r.Body)
-		request.Body = s
+		r.Body = io.NopCloser(bytes.NewBuffer(s))
+		request.ReqBody = s
 	}
 
-	request.Status = 200
-	request.Duration = time.Since(start)
-	io.WriteString(w, "This is my website!\n")
+	wp := NewProxyResponse(w, &request)
+	proxy.ServeHTTP(wp, r)
+	wp.Done(program)
 }

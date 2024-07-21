@@ -17,10 +17,14 @@ type JsonField struct {
 type Request struct {
 	Query    string
 	Method   string
-	Headers  http.Header
 	Duration time.Duration
 	Status   uint
-	Body     []byte
+
+	ReqHeaders http.Header
+	ReqBody    []byte
+
+	ResHeaders http.Header
+	ResBody    []byte
 }
 
 func (r *Request) FilterValue() string {

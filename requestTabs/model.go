@@ -45,35 +45,50 @@ var (
 
 type Model struct {
 	requestFocused bool
-	viewport       viewport.Model
+	reqViewport    viewport.Model
+	resViewport    viewport.Model
 	request        *request2.Request
 }
 
 func New(request *request2.Request) Model {
-	v := viewport.New(0, 0)
-	v.HighPerformanceRendering = false
+	reqV := viewport.New(0, 0)
+	reqV.HighPerformanceRendering = false
+
+	resV := viewport.New(0, 0)
+	resV.HighPerformanceRendering = false
 	return Model{
 		true,
-		v,
+		reqV,
+		resV,
 		request,
 	}
 }
 func (m *Model) SetWidth(width int) {
 	// account for padding
 	windowStyle.Width(width - 2)
-	m.viewport.Width = width - 2
+	m.reqViewport.Width = width - 2
+	m.resViewport.Width = width - 2
 }
 
 func (m *Model) SetHeight(height int) {
 	// account for padding and the tabs height themselves
 	windowStyle.Height(height - 4)
-	m.viewport.Height = height - 4
+	m.reqViewport.Height = height - 4
+	m.resViewport.Height = height - 4
 }
 
 func (m *Model) SetRequest(request *request2.Request) {
 	m.request = request
-	m.viewport.SetContent(renderRequest(request.Method, request.Query, request.Headers, request.Body))
-	m.viewport.SetYOffset(0)
+	m.reqViewport.SetContent(renderRequest(request.Method, request.Query, request.ReqHeaders, request.ReqBody))
+	m.reqViewport.SetYOffset(0)
+
+	m.resViewport.SetContent(renderRequest(request.Method, request.Query, request.ResHeaders, request.ResBody))
+	m.resViewport.SetYOffset(0)
+}
+
+func (m *Model) SetResponse(request *request2.Request) {
+	m.resViewport.SetContent(renderRequest(request.Method, request.Query, request.ResHeaders, request.ResBody))
+	m.resViewport.SetYOffset(0)
 }
 
 func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
@@ -87,7 +102,11 @@ func (m Model) Update(msg tea.Msg) (Model, tea.Cmd) {
 	}
 
 	var cmd tea.Cmd
-	m.viewport, cmd = m.viewport.Update(msg)
+	if m.requestFocused {
+		m.reqViewport, cmd = m.reqViewport.Update(msg)
+	} else {
+		m.resViewport, cmd = m.resViewport.Update(msg)
+	}
 	return m, cmd
 }
 
@@ -110,11 +129,11 @@ func (m Model) View() string {
 
 	if m.requestFocused {
 		doc.WriteString(
-			windowStyle.Render(m.viewport.View()),
+			windowStyle.Render(m.reqViewport.View()),
 		)
 	} else {
 		doc.WriteString(
-			windowStyle.Render(m.viewport.View()),
+			windowStyle.Render(m.resViewport.View()),
 		)
 	}
 
