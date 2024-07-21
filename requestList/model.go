@@ -49,6 +49,10 @@ func (m *Model) SetHeight(height int) {
 	m.list.SetHeight(height - 1)
 }
 
+func (m *Model) Clear() {
+	m.list.SetItems(make([]list.Item, 0))
+}
+
 func (m Model) SelectedItem() list.Item {
 	return m.list.SelectedItem()
 }

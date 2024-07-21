@@ -26,6 +26,8 @@ type model struct {
 	height    int
 }
 
+var windowStyle = lipgloss.NewStyle().Align(lipgloss.Center, lipgloss.Center).Italic(true)
+
 func initialModel(port string) model {
 	return model{
 		port: port,
@@ -48,6 +50,7 @@ func (m model) Init() tea.Cmd {
 func (m *model) UpdatePanels(width int, height int, fullWidth bool, request *shared.Request) {
 	m.width = width
 	m.height = height
+	windowStyle = windowStyle.Width(width).Height(height)
 	m.fullWidth = fullWidth
 	m.selected = request
 
@@ -80,6 +83,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "c":
+			m.list.Clear()
+			m.UpdatePanels(m.width, m.height, m.fullWidth, nil)
+			return m, nil
 		case "ctrl+c":
 			return m, tea.Quit
 		case "q":
@@ -127,7 +134,7 @@ func (m model) View() string {
 		return lipgloss.JoinHorizontal(lipgloss.Top, m.list.View(), m.tabs.View())
 	}
 	if len(m.list.Items()) == 0 {
-		return fmt.Sprintf("No hay solicitudes todavía. Intenta ver http://localhost%s", m.port)
+		return windowStyle.Render(fmt.Sprintf("No hay solicitudes todavía. Intenta ver http://localhost%s", m.port))
 	}
 	return m.list.View()
 }
