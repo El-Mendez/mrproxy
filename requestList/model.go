@@ -17,14 +17,17 @@ type Model struct {
 }
 
 func New(items []list.Item, width int, height int) Model {
+	list := list.New(
+		items,
+		requestRenderer{},
+		width,
+		height,
+	)
+	list.SetShowHelp(false)
+
 	return Model{
 		follow: true,
-		list: list.New(
-			items,
-			requestRenderer{},
-			width,
-			height,
-		),
+		list:   list,
 	}
 }
 

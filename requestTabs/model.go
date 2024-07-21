@@ -4,7 +4,7 @@ import (
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	request2 "mrproxy/shared"
+	shared "mrproxy/shared"
 	"strings"
 )
 
@@ -17,8 +17,8 @@ func tabBorderWithBottom(left, middle, right string) lipgloss.Border {
 }
 
 var (
-	tabStyle  = lipgloss.NewStyle().BorderForeground(request2.HighlightColor).Padding(0, 1)
-	restColor = lipgloss.NewStyle().Foreground(request2.HighlightColor)
+	tabStyle  = lipgloss.NewStyle().BorderForeground(shared.HighlightColor).Padding(0, 1)
+	restColor = lipgloss.NewStyle().Foreground(shared.HighlightColor)
 
 	activeRequestStyle = tabStyle.
 				Copy().
@@ -37,7 +37,7 @@ var (
 				Border(tabBorderWithBottom("┴", "─", "┴"))
 
 	windowStyle = lipgloss.NewStyle().
-			BorderForeground(request2.HighlightColor).
+			BorderForeground(shared.HighlightColor).
 			Align(lipgloss.Top).
 			Border(lipgloss.NormalBorder()).
 			UnsetBorderTop()
@@ -47,10 +47,10 @@ type Model struct {
 	requestFocused bool
 	reqViewport    viewport.Model
 	resViewport    viewport.Model
-	request        *request2.Request
+	request        *shared.Request
 }
 
-func New(request *request2.Request) Model {
+func New(request *shared.Request) Model {
 	reqV := viewport.New(0, 0)
 	reqV.HighPerformanceRendering = false
 
@@ -77,7 +77,7 @@ func (m *Model) SetHeight(height int) {
 	m.resViewport.Height = height - 4
 }
 
-func (m *Model) SetRequest(request *request2.Request) {
+func (m *Model) SetRequest(request *shared.Request) {
 	m.request = request
 	m.reqViewport.SetContent(renderRequest(request.Method, request.Query, request.ReqHeaders, request.ReqBody))
 	m.reqViewport.SetYOffset(0)
@@ -86,7 +86,7 @@ func (m *Model) SetRequest(request *request2.Request) {
 	m.resViewport.SetYOffset(0)
 }
 
-func (m *Model) SetResponse(request *request2.Request) {
+func (m *Model) SetResponse(request *shared.Request) {
 	m.resViewport.SetContent(renderRequest(request.Method, request.Query, request.ResHeaders, request.ResBody))
 	m.resViewport.SetYOffset(0)
 }
