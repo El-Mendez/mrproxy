@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -16,6 +17,7 @@ const minWidth = 80
 type incomingMsg struct{ request *request2.Request }
 type updatedMsg struct{ request *request2.Request }
 type model struct {
+	port     string
 	list     requestList.Model
 	tabs     requestTabs.Model
 	selected *request2.Request
@@ -23,8 +25,9 @@ type model struct {
 	height   int
 }
 
-func initialModel() model {
+func initialModel(port string) model {
 	return model{
+		port: port,
 		list: requestList.New(
 			make([]list.Item, 0),
 			defaultWidth,
@@ -112,7 +115,7 @@ func (m model) View() string {
 		return lipgloss.JoinHorizontal(lipgloss.Top, m.list.View(), m.tabs.View())
 	}
 	if len(m.list.Items()) == 0 {
-		return "No items yet! :)"
+		return fmt.Sprintf("No hay solicitudes todavía. Intenta ver http://localhost%s", m.port)
 	}
 	return m.list.View()
 }

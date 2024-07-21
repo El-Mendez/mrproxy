@@ -10,9 +10,9 @@ import (
 const thePORT string = ":3333"
 
 func main() {
-	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
+	p := tea.NewProgram(initialModel(thePORT), tea.WithAltScreen())
 
-	proxyUrl, err := url.Parse("http://localhost:3000")
+	proxyUrl, err := url.Parse(os.Args[1])
 	if err != nil {
 		fmt.Println("URL Error:", err)
 		os.Exit(1)
