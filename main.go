@@ -6,13 +6,13 @@ import (
 	"os"
 )
 
-const PORT string = ":3333"
+const thePORT string = ":3333"
 
 func main() {
-	//SetupProxy(PORT, nil)
+	//setupProxy(thePORT, nil)
 
 	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
-	go SetupProxy(PORT, p)
+	go setupProxy(thePORT, p)
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)

@@ -6,12 +6,13 @@ import (
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	"io"
+	"mrproxy/shared"
 	"net/http"
 	"os"
 	"time"
 )
 
-func SetupProxy(port string, program *tea.Program) {
+func setupProxy(port string, program *tea.Program) {
 	http.HandleFunc("/", handleIncomingGenerator(program))
 
 	err := http.ListenAndServe(port, nil)
@@ -31,18 +32,18 @@ func handleIncomingGenerator(program *tea.Program) func(w http.ResponseWriter, r
 
 func handleIncoming(program *tea.Program, w http.ResponseWriter, r *http.Request) {
 	start := time.Now()
-	request := Request{
-		query:    r.RequestURI,
-		method:   r.Method,
-		duration: time.Since(start),
-		headers:  make([]RequestHeader, len(r.Header)),
+	request := shared.Request{
+		Query:    r.RequestURI,
+		Method:   r.Method,
+		Duration: time.Since(start),
+		Headers:  make([]shared.Header, len(r.Header)),
 	}
 
 	i := 0
 	for key, val := range r.Header {
-		request.headers[i] = RequestHeader{
-			key: key,
-			val: val,
+		request.Headers[i] = shared.Header{
+			Key: key,
+			Val: val,
 		}
 		i++
 	}
@@ -55,15 +56,15 @@ func handleIncoming(program *tea.Program, w http.ResponseWriter, r *http.Request
 		d := json.NewDecoder(r.Body)
 		err := d.Decode(&body)
 		if err == nil {
-			request.body = parseJsonValue(body)
+			request.Body = parseJsonValue(body)
 		}
 	} else if r.Header.Get("Content-Type") == "text/plain" {
 		s, _ := io.ReadAll(r.Body)
-		request.body = string(s)
+		request.Body = string(s)
 	}
 
-	request.status = 200
-	request.duration = time.Since(start)
+	request.Status = 200
+	request.Duration = time.Since(start)
 	io.WriteString(w, "This is my website!\n")
 }
 
@@ -86,11 +87,11 @@ func parseJsonValue(value interface{}) interface{} {
 		return value
 	case map[string]interface{}:
 		i := 0
-		result := make([]JsonField, len(v))
+		result := make([]shared.JsonField, len(v))
 		for k, field := range v {
-			result[i] = JsonField{
-				key: k,
-				val: parseJsonValue(field),
+			result[i] = shared.JsonField{
+				Key: k,
+				Val: parseJsonValue(field),
 			}
 			i++
 		}

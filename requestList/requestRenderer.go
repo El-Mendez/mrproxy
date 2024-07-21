@@ -1,17 +1,12 @@
-package main
+package requestList
 
 import (
 	"fmt"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/lipgloss"
 	"io"
+	"mrproxy/shared"
 	"strings"
-)
-
-var (
-	itemStyle         = lipgloss.NewStyle().PaddingLeft(4)
-	selectedItemStyle = lipgloss.NewStyle().PaddingLeft(2).Foreground(lipgloss.Color("170"))
 )
 
 type requestRenderer struct{}
@@ -27,16 +22,16 @@ func (d requestRenderer) Update(_ tea.Msg, _ *list.Model) tea.Cmd {
 }
 
 func (d requestRenderer) Render(w io.Writer, m list.Model, index int, listItem list.Item) {
-	r, ok := listItem.(*Request)
+	r, ok := listItem.(*shared.Request)
 	if !ok {
 		return
 	}
 
 	var str string
-	if r.status == 0 {
-		str = fmt.Sprintf("--- %s %s", r.method, r.query)
+	if r.Status == 0 {
+		str = fmt.Sprintf("--- %s %s", r.Method, r.Query)
 	} else {
-		str = fmt.Sprintf("%d %s %s", r.status, r.method, r.query)
+		str = fmt.Sprintf("%d %s %s", r.Status, r.Method, r.Query)
 	}
 
 	fn := itemStyle.Render
