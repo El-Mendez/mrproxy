@@ -46,6 +46,9 @@ func handleIncoming(program *tea.Program, proxy *httputil.ReverseProxy, w http.R
 	}
 
 	contentType := r.Header.Get("Content-Type")
+	// avoid cacheing responses (304 are not visible)
+	r.Header.Del("If-Modified-Since")
+	r.Header.Del("If-None-Match")
 	if strings.Contains(contentType, "text/html") || strings.Contains(contentType, "application/json") || strings.Contains(contentType, "text/plain") {
 		s, _ := io.ReadAll(r.Body)
 		r.Body = io.NopCloser(bytes.NewBuffer(s))
