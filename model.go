@@ -67,6 +67,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "q":
 			if m.selected != nil {
 				m.selected = nil
+				m.list.SetFollow(false)
 				m.list.SetWidth(m.width)
 				return m, nil
 			} else {
@@ -76,6 +77,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "enter":
 			if selected, ok := m.list.SelectedItem().(*request2.Request); ok {
+				m.list.SetFollow(true)
 				m.tabs.SetRequest(selected)
 				m.selected = selected
 				m.list.SetWidth(m.width / 2)

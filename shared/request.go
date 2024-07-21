@@ -1,6 +1,9 @@
 package shared
 
-import "time"
+import (
+	"net/http"
+	"time"
+)
 
 type Header struct {
 	Key string
@@ -14,10 +17,10 @@ type JsonField struct {
 type Request struct {
 	Query    string
 	Method   string
-	Headers  []Header
+	Headers  http.Header
 	Duration time.Duration
 	Status   uint
-	Body     interface{}
+	Body     []byte
 }
 
 func (r *Request) FilterValue() string {

@@ -12,13 +12,13 @@ var (
 )
 
 type Model struct {
-	list    list.Model
-	focused bool
+	list   list.Model
+	follow bool
 }
 
 func New(items []list.Item, width int, height int) Model {
 	return Model{
-		focused: true,
+		follow: true,
 		list: list.New(
 			items,
 			requestRenderer{},
@@ -28,8 +28,8 @@ func New(items []list.Item, width int, height int) Model {
 	}
 }
 
-func (m *Model) SetFocus(focused bool) {
-	m.focused = focused
+func (m *Model) SetFollow(follow bool) {
+	m.follow = follow
 }
 
 func (m *Model) SetWidth(width int) {
@@ -52,7 +52,7 @@ func (m Model) Items() []list.Item {
 
 func (m *Model) InsertItem(index int, item list.Item) tea.Cmd {
 	cmd := m.list.InsertItem(index, item)
-	if index != 0 {
+	if index != 0 || m.follow {
 		m.list.CursorDown()
 	}
 	return cmd

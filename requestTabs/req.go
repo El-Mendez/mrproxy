@@ -1,68 +1,67 @@
 package requestTabs
 
 import (
-	"fmt"
-	request2 "mrproxy/shared"
+	"bytes"
+	"encoding/json"
+	"github.com/alecthomas/chroma/v2/quick"
+	"mrproxy/shared"
+	"net/http"
 	"strings"
 )
 
-func renderRequest(request *request2.Request) string {
+func renderRequest(method string, query string, headers http.Header, body []byte) string {
 	doc := strings.Builder{}
 
-	doc.WriteString(request.Method)
+	doc.WriteString(method)
 	doc.WriteString(" ")
-	doc.WriteString(request.Query)
+	doc.WriteString(query)
 	doc.WriteString("\n\n")
 
-	for _, header := range request.Headers {
-		doc.WriteString(header.Key)
-		doc.WriteString(": ")
-		doc.WriteString(fmt.Sprintf("%v", header.Val))
-		doc.WriteString("\n")
+	for k, values := range headers {
+		for _, value := range values {
+			doc.WriteString(shared.HighlightedText.Render(k))
+			doc.WriteString(": ")
+			doc.WriteString(value)
+			doc.WriteString("\n")
+		}
 	}
 
 	doc.WriteString("\n\n")
-	renderJson(&doc, 0, request.Body, false)
+
+	if body != nil {
+		str, err := renderPrettyJson(body)
+		if err == nil {
+			doc.WriteString(str)
+		} else {
+			doc.WriteString(string(body))
+		}
+	} else {
+		doc.WriteString("No body...")
+	}
+
 	doc.WriteString("\n\n\n")
 	return doc.String()
 }
 
-func renderJson(doc *strings.Builder, indentation int, value interface{}, initialIndentation bool) {
-	if initialIndentation {
-		doc.WriteString(strings.Repeat(" ", indentation*2))
+func renderPrettyJson(obj []byte) (string, error) {
+	var err error
+	var data interface{}
+	err = json.Unmarshal(obj, &data)
+	if err != nil {
+		return "", err
 	}
 
-	if value == nil {
-		doc.WriteString("null")
-		return
+	var prettyJson []byte
+	prettyJson, err = json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return "", err
 	}
 
-	switch v := value.(type) {
-	case string:
-		doc.WriteString(v)
-	case float64:
-		doc.WriteString(fmt.Sprintf("%f", v))
-	case bool:
-		doc.WriteString(fmt.Sprintf("%v", v))
-	case []interface{}:
-		doc.WriteString("[")
-		for i := 0; i < len(v); i++ {
-			renderJson(doc, indentation+1, v[i], true)
-			doc.WriteString(",")
-		}
-		doc.WriteString(strings.Repeat(" ", indentation*2))
-		doc.WriteString("]")
-	case []request2.JsonField:
-		doc.WriteString("{")
-		for _, field := range v {
-			doc.WriteString(strings.Repeat(" ", indentation*2+2))
-			doc.WriteString(field.Key)
-			doc.WriteString(": ")
-			renderJson(doc, indentation+1, field.Val, false)
-			doc.WriteString(",")
-		}
-		doc.WriteString(strings.Repeat(" ", indentation*2))
-		doc.WriteString("}")
+	var buff bytes.Buffer
+	err = quick.Highlight(&buff, string(prettyJson), "json", "terminal256", "autumn")
+	if err != nil {
+		return "", err
 	}
 
+	return buff.String(), nil
 }

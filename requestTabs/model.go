@@ -72,7 +72,7 @@ func (m *Model) SetHeight(height int) {
 
 func (m *Model) SetRequest(request *request2.Request) {
 	m.request = request
-	m.viewport.SetContent(renderRequest(request))
+	m.viewport.SetContent(renderRequest(request.Method, request.Query, request.Headers, request.Body))
 	m.viewport.SetYOffset(0)
 }
 
