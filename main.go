@@ -10,8 +10,6 @@ import (
 const thePORT string = ":3333"
 
 func main() {
-	p := tea.NewProgram(initialModel(thePORT), tea.WithAltScreen())
-
 	var target string
 	var port string
 	if len(os.Args) > 1 {
@@ -20,12 +18,13 @@ func main() {
 		target = "http://localhost:3000"
 	}
 
-	if len(os.Args) > 1 {
+	if len(os.Args) > 2 {
 		port = fmt.Sprintf(":%s", os.Args[2])
 	} else {
 		port = thePORT
 	}
 
+	p := tea.NewProgram(initialModel(port), tea.WithAltScreen())
 	proxyUrl, err := url.Parse(target)
 	if err != nil {
 		fmt.Println("URL Error:", err)

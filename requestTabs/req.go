@@ -4,10 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"github.com/alecthomas/chroma/v2/quick"
+	"github.com/charmbracelet/lipgloss"
 	"mrproxy/shared"
 	"net/http"
 	"strings"
 )
+
+var noBodyStyle = lipgloss.NewStyle().Italic(true).Faint(true)
 
 func renderRequest(method string, query string, headers http.Header, body []byte) string {
 	doc := strings.Builder{}
@@ -36,7 +39,7 @@ func renderRequest(method string, query string, headers http.Header, body []byte
 			doc.WriteString(string(body))
 		}
 	} else {
-		doc.WriteString("No body...")
+		doc.WriteString(noBodyStyle.Render("No body found. We don't support it or its cached"))
 	}
 
 	doc.WriteString("\n\n\n")
