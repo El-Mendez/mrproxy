@@ -8,6 +8,7 @@ import (
 	"mrproxy/requestList"
 	"mrproxy/requestTabs"
 	shared "mrproxy/shared"
+	"strings"
 )
 
 const defaultWidth = 20
@@ -17,7 +18,7 @@ const minWidth = 80
 type incomingMsg struct{ request *shared.Request }
 type updatedMsg struct{ request *shared.Request }
 type model struct {
-	port      string
+	addresses []string
 	fullWidth bool
 	list      requestList.Model
 	tabs      requestTabs.Model
@@ -28,9 +29,9 @@ type model struct {
 
 var windowStyle = lipgloss.NewStyle().Align(lipgloss.Center, lipgloss.Center).Italic(true)
 
-func initialModel(port string) model {
+func initialModel(addresses []string) model {
 	return model{
-		port: port,
+		addresses: addresses,
 		list: requestList.New(
 			make([]list.Item, 0),
 			defaultWidth,
@@ -134,7 +135,7 @@ func (m model) View() string {
 		return lipgloss.JoinHorizontal(lipgloss.Top, m.list.View(), m.tabs.View())
 	}
 	if len(m.list.Items()) == 0 {
-		return windowStyle.Render(fmt.Sprintf("No hay solicitudes todavía. Intenta ver http://localhost%s", m.port))
+		return windowStyle.Render(fmt.Sprintf("No hay solicitudes todavía.\n%s", strings.Join(m.addresses, "\n")))
 	}
 	return m.list.View()
 }
